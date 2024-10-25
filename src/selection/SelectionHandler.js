@@ -36,9 +36,13 @@ export default class SelectionHandler extends EventEmitter {
 
     element.addEventListener('mousedown', this._onMouseDown);
     element.addEventListener('mouseup', this._onMouseUp);
+    element.addEventListener('trigger-selection', () => {
+      this._onTriggerSelection();
+    });
 
     if (IS_TOUCH)
       enableTouch(element, this._onMouseUp);
+
   }
 
   get enabled() {
@@ -56,6 +60,23 @@ export default class SelectionHandler extends EventEmitter {
   }
 
   _onMouseUp = evt => {
+    const selection = this.document.getSelection();
+    if (selection.isCollapsed) {
+      const annotationSpan = evt.target.closest('.r6o-annotation');
+      if (annotationSpan) {
+        this.emit('select', {
+          selection: this.highlighter.getAnnotationsAt(annotationSpan)[0],
+          element: annotationSpan
+        });
+      } else {
+        // De-select
+        this.emit('select', {});
+      }
+    }
+  }
+
+  _onTriggerSelection = evt => {
+    console.log('mouseup');
     if (this.isEnabled) {
       const selection = this.document.getSelection();
 
